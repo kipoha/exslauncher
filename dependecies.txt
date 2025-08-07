@@ -1,0 +1,3 @@
+python-fabric-git
+python-pillow
+python-gobject

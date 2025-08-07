@@ -9,7 +9,8 @@ class ColorPickerCommand(CustomCommand):
     def __init__(self):
         super().__init__(
             "Color Picker",
-            [],   
+            "Color Picker",
+            [],
             str(get_root_path() / "icons" / "color_picker.png"),
         )
 
@@ -26,10 +27,7 @@ class ColorPickerCommand(CustomCommand):
         subprocess.run(["wl-copy"], input=color, text=True)
 
         send_notification(
-            "Color Picker",
-            "Color copied to clipboard",
-            urgency="low",
-            color_icon=color
+            "Color Picker", "Color copied to clipboard", urgency="low", color_icon=color
         )
 
 
@@ -38,27 +36,46 @@ def get_custom_commands() -> list[CustomCommand]:
     commands = [
         CustomCommand(
             "Search in Browser",
+            "Search in Firefox Browser",
             "fabric-cli exec default browser.toggle\\(\\)",
             str(root / "icons" / "search.png"),
         ),
         CustomCommand(
             "Clipboard",
+            "Clipboard Manager",
             "fabric-cli exec default clipboard.toggle\\(\\)",
             str(root / "icons" / "clipboard.png"),
         ),
         CustomCommand(
+            "Wallpaper Changer",
             "Wallpaper Changer",
             "fabric-cli exec default wallpaper.toggle\\(\\)",
             str(root / "icons" / "wallpaper.png"),
         ),
         ColorPickerCommand(),
         CustomCommand(
-            "Lock Screen", "hyprlock", str(root / "icons" / "lock_screen.png")
+            "Lock Screen",
+            "Hyprlock Screen",
+            "hyprlock",
+            str(root / "icons" / "lock_screen.png"),
         ),
         CustomCommand(
-            "Shutdown", "systemctl poweroff", str(root / "icons" / "shutdown.png")
+            "Shutdown",
+            "Shutdown System",
+            "systemctl poweroff",
+            str(root / "icons" / "shutdown.png"),
         ),
-        CustomCommand("Logout", "pkill niri", str(root / "icons" / "logout.png")),
-        CustomCommand("Reboot", "systemctl reboot", str(root / "icons" / "reboot.png")),
+        CustomCommand(
+            "Logout",
+            "Logout from system",
+            "pkill niri",
+            str(root / "icons" / "logout.png"),
+        ),
+        CustomCommand(
+            "Reboot",
+            "Reboot system",
+            "systemctl reboot",
+            str(root / "icons" / "reboot.png"),
+        ),
     ]
     return commands

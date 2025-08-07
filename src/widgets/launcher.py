@@ -24,7 +24,7 @@ class Launcher(Window):
             name="launcher",
             layer="top",
             keyboard_mode="exclusive",
-            exclusivity="exclusive",
+            exclusivity="none",
             accept_focus=True,
             anchor="center bottom",
             visible=False,
@@ -60,14 +60,29 @@ class Launcher(Window):
             # name="launcher-search",
             size=(700, 0),
         )
-        self.search_image_box = Box(name="launcher-search-image-box", orientation="h", spacing=4, children=[
-            Image(str(get_root_path() / "icons" / "search.png"), size=(36, 36), v_align="center", h_align="center")
-        ])
+        self.search_image_box = Box(
+            name="launcher-search-image-box",
+            orientation="h",
+            spacing=4,
+            children=[
+                Image(
+                    str(get_root_path() / "icons" / "search.png"),
+                    size=(28, 28),
+                    v_align="center",
+                    h_align="center",
+                )
+            ],
+        )
 
-        self.search_box = Box(name="launcher-search", orientation="h", spacing=4, children=[
-            self.search_image_box,
-            self.search,
-        ])
+        self.search_box = Box(
+            name="launcher-search",
+            orientation="h",
+            spacing=4,
+            children=[
+                self.search_image_box,
+                self.search,
+            ],
+        )
 
         self.apps_scrolled = ScrolledWindow(
             child=self.viewport,
@@ -78,14 +93,24 @@ class Launcher(Window):
             kinetic_scroll=True,
         )
 
-        main_box = Box(orientation="v", spacing=1, name="launcher-main-box", children=[
-            self.apps_scrolled,
-            self.search_box,
-        ])
+        main_box = Box(
+            orientation="v",
+            spacing=1,
+            name="launcher-main-box",
+            children=[
+                self.apps_scrolled,
+                self.search_box,
+            ],
+        )
 
-        box = Box(orientation="v", spacing=8, name="launcher-box", children=[
-            main_box,
-        ])
+        box = Box(
+            orientation="v",
+            spacing=8,
+            name="launcher-box",
+            children=[
+                main_box,
+            ],
+        )
 
         self.children = CenterBox(center_children=box)
 
@@ -104,7 +129,6 @@ class Launcher(Window):
             child.get_style_context().add_class("fade-out")
 
         def remove_old_and_add_new():
-
             for child in old_children:
                 self.viewport.remove(child)
 
@@ -118,7 +142,7 @@ class Launcher(Window):
                 self.viewport.add(btn)
                 self.buttons.append(btn)
 
-            item_height = 40  
+            item_height = 40
             spacing = self.viewport.get_spacing() or 4
 
             new_height = min(len(buttons_to_show) * (item_height + spacing), 400)
@@ -140,10 +164,33 @@ class Launcher(Window):
         self._refresh_timeout_id = GLib.timeout_add(160, remove_old_and_add_new)
 
     def create_app_button(self, app):
-        icon = Image(pixbuf=app.get_icon_pixbuf(size=30)) or Label(label="[No Icon]", size=(30, 30))
-        label = Label(label=app.display_name or app.name or "Unknown")
+        icon = Image(pixbuf=app.get_icon_pixbuf(size=30))
+        label = Label(
+            label=app.display_name or app.name or "Unknown",
+            h_expand=True,
+            h_align="start",
+            size_hint=(1.0, None),
+            style="""
+                font-size: 15px;
+                font-weight: bold;
+            """
+        )
+        desc = Label(
+            label=app.description or "",
+            size_hint=(1.0, None),
+            h_expand=True,
+            h_align="start",
+            style="""
+                font-size: 11px;
+                font-style: italic;
+                color: #888;
+            """
+        )
+        label_data_box = Box(
+            orientation="v", spacing=0, children=[label, desc]
+        )
 
-        box = Box(orientation="h", spacing=6, children=[icon, label], h_expand=True)
+        box = Box(orientation="h", spacing=6, children=[icon, label_data_box], h_expand=True)
 
         btn = Button(child=box, name="launcher-app-button")
 
@@ -158,20 +205,24 @@ class Launcher(Window):
             GLib.timeout_add(500, clear_text_later)
 
         btn.connect("clicked", on_click)
-        btn._launcher_click = on_click 
+        btn._launcher_click = on_click
         return btn
 
     def on_search_changed(self, entry):
         text = entry.get_text().strip().casefold()
         if text.startswith(config.get("prefix", ">")):
             self.visible_apps = [
-                cmd for cmd in self.commands
-                if text[1:] in ((cmd.display_name or "") + " " + (cmd.name or "")).casefold()
+                cmd
+                for cmd in self.commands
+                if text[1:]
+                in ((cmd.display_name or "") + " " + (cmd.name or "")).casefold()
             ]
         else:
             self.visible_apps = [
-                app for app in self.all_apps
-                if text in ((app.display_name or "") + " " + (app.name or "")).casefold()
+                app
+                for app in self.all_apps
+                if text
+                in ((app.display_name or "") + " " + (app.name or "")).casefold()
             ]
         self.refresh_buttons()
 
@@ -223,7 +274,7 @@ class Launcher(Window):
         diff_search_opacity = self.anim_search_target_opacity - self.anim_search_opacity
         self.anim_search_opacity += diff_search_opacity * speed
 
-        height = int(self.anim_current_height) + 10
+        height = int(self.anim_current_height) + 20
         min_height = max(height, 1)
         max_height = max(min_height, 1)
         self.apps_scrolled.set_min_content_size((400, min_height))
@@ -232,11 +283,15 @@ class Launcher(Window):
         self.set_opacity(self.anim_current_opacity)
         self.search.set_opacity(self.anim_search_opacity)
 
-        if abs(diff_height) < 1 and abs(diff_opacity) < 0.01 and abs(diff_search_opacity) < 0.01:
+        if (
+            abs(diff_height) < 1
+            and abs(diff_opacity) < 0.01
+            and abs(diff_search_opacity) < 0.01
+        ):
             self.anim_current_height = self.anim_target_height
             self.anim_current_opacity = self.anim_target_opacity
             self.anim_search_opacity = self.anim_search_target_opacity
-            height = int(self.anim_current_height) + 10
+            height = int(self.anim_current_height) + 20
             min_height = max(height, 1)
             max_height = max(min_height, 1)
             self.apps_scrolled.set_min_content_size((400, min_height))

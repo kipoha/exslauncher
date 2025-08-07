@@ -22,7 +22,7 @@ class WallpaperChooser(Window):
             layer="top",
             anchor="center bottom",
             keyboard_mode="exclusive",
-            exclusivity="exclusive",
+            exclusivity="none",
             accept_focus=True,
             visible=False,
             all_visible=False,
