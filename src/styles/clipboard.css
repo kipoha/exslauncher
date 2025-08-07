@@ -1,0 +1,52 @@
+window#clipboard {
+  background-color: rgba(0, 0, 0, 0);
+  border-radius: 16px;
+}
+#clipboard-box {
+  background-color: #131317;
+}
+
+#clipboard-main-box {
+  margin: 16px;
+}
+
+#clipboard-search {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background-color: rgba(100, 100, 100, 0.2);
+  color: #C2C1FF;
+  font-size: 15px;
+  margin-bottom: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#clipboard-buffers-scrolled {
+  /* padding-bottom: 20px; */
+}
+
+#clipboard-buffer-button {
+  padding: 10px 14px;
+  background-color: transparent;
+  border-radius: 10px;
+  color: white;
+  transition: background-color 0.25s ease;
+}
+
+#clipboard-buffer-button:hover {
+  background-color: rgba(100, 100, 100, 0.2);
+}
+
+#clipboard-buffer-button:focus {
+  background-color: rgba(100, 100, 100, 0.3);
+  outline: none;
+  border-radius: 10px;
+}
+
+label {
+  color: #C2C1FF;
+  font-size: 14px;
+}
+
+image {
+  margin-right: 8px;
+}

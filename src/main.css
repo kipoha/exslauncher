@@ -1,0 +1,37 @@
+@import url("./styles/launcher.css");
+@import url("./styles/clipboard.css");
+@import url("./styles/firefox_search.css");
+@import url("./styles/wallpaper.css");
+
+* {
+  all: unset;
+  font-size: unset;
+  font-family: JetBrains Mono Nerd Font ExtraBold;
+  border-radius: 20px;
+}
+
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 150ms ease-in forwards;
+}
+
+.fade-out {
+  opacity: 1;
+  animation: fadeOut 150ms ease-out forwards;
+}
+
+.large-text {
+    font-size: 24px;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
