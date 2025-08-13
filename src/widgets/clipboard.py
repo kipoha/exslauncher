@@ -12,7 +12,7 @@ from fabric.widgets.scrolledwindow import ScrolledWindow
 
 from utils.clipboard_history import get_clipboard_history
 
-from windows.wayland import WaylandWindow as Window
+from widgets.base import AnimatedWindow as Window
 
 
 class Clipboard(Window):
@@ -22,14 +22,11 @@ class Clipboard(Window):
             name="clipboard",
             layer="top",
             anchor="center bottom",
-            keyboard_mode="exclusive",
+            keyboard_mode="on-demand",
             exclusivity="none",
-            accept_focus=True,
             visible=False,
             all_visible=False,
-            margin=(0, 0, -40, 0),
         )
-
         self.buffers = get_clipboard_history()
         self.visible_buffers = []
         self.focus_index = -1
@@ -42,13 +39,8 @@ class Clipboard(Window):
 
         self.set_opacity(0)
 
-        self.anim_current_height = 0
-        self.anim_target_height = 0
-        self.anim_current_opacity = 0
-        self.anim_target_opacity = 0
-        self.anim_search_opacity = 0
-        self.anim_search_target_opacity = 0
-        self.animation_running = False
+        self.anim_current_content_height = 300
+        self.anim_target_content_height = 300
 
         self.search = Entry(
             placeholder="",
@@ -60,8 +52,8 @@ class Clipboard(Window):
 
         self.buffers_scrolled = ScrolledWindow(
             child=self.viewport,
-            min_content_size=(400, 300),
-            max_content_size=(600, 400),
+            min_content_size=(420, 300),
+            max_content_size=(600, 420),
             name="clipboard-buffers-scrolled",
             overlay_scroll=True,
             kinetic_scroll=True,
@@ -81,6 +73,7 @@ class Clipboard(Window):
         self.refresh_buttons()
 
         self.connect("key-release-event", self.on_window_key_release)
+        self.connect("focus-out-event", self.on_focus_out)
 
     def refresh_buttons(self):
         if self._refresh_timeout_id is not None:
@@ -110,11 +103,13 @@ class Clipboard(Window):
             item_height = 40  
             spacing = self.viewport.get_spacing() or 4
 
-            new_height = min(len(buttons_to_show) * (item_height + spacing), 400)
+            new_height = min(len(buttons_to_show) * (item_height + spacing), 420)
 
             self.anim_target_height = new_height
             self.anim_target_opacity = 1.0
             self.anim_search_target_opacity = 1.0
+
+            self.anim_target_content_height = new_height + 20
 
             if not self.animation_running:
                 self.animation_running = True
@@ -216,73 +211,25 @@ class Clipboard(Window):
         return False
 
     def animation_step(self):
-        speed = 0.3
+        cont = super().animation_step()
 
-        diff_height = self.anim_target_height - self.anim_current_height
-        self.anim_current_height += diff_height * speed
+        diff_content_height = self.anim_target_content_height - self.anim_current_content_height
+        if abs(diff_content_height) < 1:
+            self.anim_current_content_height = self.anim_target_content_height
+        else:
+            self.anim_current_content_height += diff_content_height * self.speed
 
-        diff_opacity = self.anim_target_opacity - self.anim_current_opacity
-        self.anim_current_opacity += diff_opacity * speed
-
-        diff_search_opacity = self.anim_search_target_opacity - self.anim_search_opacity
-        self.anim_search_opacity += diff_search_opacity * speed
-
-        height = int(self.anim_current_height) + 10
-        min_height = max(height, 1)
-        max_height = max(min_height, 1)
-        self.buffers_scrolled.set_min_content_size((400, min_height))
+        min_height = int(self.anim_current_content_height)
+        max_height = min_height + 20
+        self.buffers_scrolled.set_min_content_size((420, min_height))
         self.buffers_scrolled.set_max_content_size((600, max_height))
 
-        self.set_opacity(self.anim_current_opacity)
-        self.search.set_opacity(self.anim_search_opacity)
+        return cont
 
-        if abs(diff_height) < 1 and abs(diff_opacity) < 0.01 and abs(diff_search_opacity) < 0.01:
-            self.anim_current_height = self.anim_target_height
-            self.anim_current_opacity = self.anim_target_opacity
-            self.anim_search_opacity = self.anim_search_target_opacity
-            height = int(self.anim_current_height) + 10
-            min_height = max(height, 1)
-            max_height = max(min_height, 1)
-            self.buffers_scrolled.set_min_content_size((400, min_height))
-            self.buffers_scrolled.set_max_content_size((600, max_height))
-            self.set_opacity(self.anim_current_opacity)
-            self.search.set_opacity(self.anim_search_opacity)
-            self.animation_running = False
-
-            if self.anim_current_opacity <= 0:
-                self.hide()
-
-            return False
-
-        return True
-
-    def animate_hide(self):
-        self.anim_target_height = 0
-        self.anim_target_opacity = 0
-        self.anim_search_target_opacity = 0
-        if not self.animation_running:
-            self.animation_running = True
-            GLib.timeout_add(10, self.animation_step)
-
+    
     def animate_show(self):
-        self.show_all()
+        self.refresh_buttons()
         self.buffers = get_clipboard_history()
         self.visible_buffers = self.buffers.copy()
-        self.anim_current_height = 0
-        self.anim_current_opacity = 0
-        self.anim_search_opacity = 0
-
-        self.anim_target_opacity = 1.0
-        self.anim_search_target_opacity = 1.0
-
-        self.refresh_buttons()
         GLib.idle_add(self.search.grab_focus)
-        if not self.animation_running:
-            self.animation_running = True
-            GLib.timeout_add(10, self.animation_step)
-
-    def toggle(self):
-        if self.is_visible():
-            self.animate_hide()
-        else:
-            self.animate_show()
+        super().animate_show()

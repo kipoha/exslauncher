@@ -2,6 +2,8 @@
 @import url("./styles/clipboard.css");
 @import url("./styles/firefox_search.css");
 @import url("./styles/wallpaper.css");
+@import url("./styles/osd.css");
+@import url("./styles/trigger.css");
 
 * {
   all: unset;

@@ -1,0 +1,52 @@
+window#osd {
+  background-color: rgba(0, 0, 0, 0);
+  border-radius: 16px;
+}
+
+#osd-box {
+  background-color: #131317;
+  margin-right: 6px
+}
+
+#osd-main-box {
+  margin: 16px 40px 16px 16px;
+}
+
+label {
+  color: #C2C1FF;
+  font-size: 14px;
+}
+
+image {
+  margin-right: 8px;
+}
+
+#brightness-bar {
+  color: rgba(255, 255, 255, 0.05);
+  border: solid 13px rgba(195, 197, 224, 0.5);
+}
+
+#brightness-bar-icon {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 20px;
+  margin-right: 6px;
+  margin-bottom: 1px;
+}
+
+#volume-bar {
+  color: rgba(255, 255, 255, 0.05);
+  border: solid 13px rgba(195, 197, 224, 0.5);
+}
+
+#volume-bar-icon {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 20px;
+  margin-right: 10px;
+  margin-bottom: 1px;
+}
+
+#circular-progressbar .progress-text {
+  font-size: 16px;
+  font-weight: bold;
+  /* fill: white; */
+}

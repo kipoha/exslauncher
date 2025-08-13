@@ -54,11 +54,23 @@ def get_custom_commands() -> list[CustomCommand]:
         ),
         ColorPickerCommand(),
         CustomCommand(
+            "Disable Live Wallpaper",
+            "Disable Live Wallpaper",
+            "pkill mpvpaper",
+            # str(root / "icons" / "disable_live_wallpaper.png"),
+        ),
+        CustomCommand(
             "Lock Screen",
             "Hyprlock Screen",
             "hyprlock",
             str(root / "icons" / "lock_screen.png"),
         ),
+        # CustomCommand(
+        #     "Suspend",
+        #     "Suspend System",
+        #     "systemctl suspend",
+        #     str(root / "icons" / "suspend.png"),
+        # ),
         CustomCommand(
             "Shutdown",
             "Shutdown System",

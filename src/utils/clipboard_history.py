@@ -13,6 +13,5 @@ def get_clipboard_history(limit=50):
                 "raw": raw,
                 "is_binary": "[[ binary data" in raw,
             })
-            print(raw)
         return history
     return []

@@ -5,9 +5,6 @@ import tempfile
 
 
 def create_color_icon(color: str, size: int = 1) -> str:
-    """
-    Создаёт PNG-изображение с указанным цветом и возвращает путь к нему.
-    """
     image = Image.new("RGB", (size, size), color)
     temp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
     image.save(temp_file.name)

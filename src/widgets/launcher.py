@@ -9,12 +9,12 @@ from fabric.widgets.image import Image
 from fabric.widgets.entry import Entry
 from fabric.widgets.scrolledwindow import ScrolledWindow
 
-from windows.wayland import WaylandWindow as Window
-
 from commands.commands import get_custom_commands
 
 from utils.load_config import config
 from utils.path import get_root_path
+
+from widgets.base import AnimatedWindow as Window
 
 
 class Launcher(Window):
@@ -23,15 +23,12 @@ class Launcher(Window):
             title="launcher",
             name="launcher",
             layer="top",
-            keyboard_mode="exclusive",
+            keyboard_mode="on-demand",
             exclusivity="none",
-            accept_focus=True,
             anchor="center bottom",
             visible=False,
             all_visible=False,
-            margin=(0, 0, -40, 0),
         )
-
         self.all_apps = get_desktop_applications()
         self.visible_apps = self.all_apps.copy()
         self.commands = get_custom_commands()
@@ -41,23 +38,17 @@ class Launcher(Window):
         self.set_app_paintable(True)
         self._refresh_timeout_id = None
 
+        self.anim_current_content_height = 300
+        self.anim_target_content_height = 300
+
         self.viewport = Box(orientation="v", spacing=4)
 
         self.set_opacity(0)
-
-        self.anim_current_height = 0
-        self.anim_target_height = 0
-        self.anim_current_opacity = 0
-        self.anim_target_opacity = 0
-        self.anim_search_opacity = 0
-        self.anim_search_target_opacity = 0
-        self.animation_running = False
 
         self.search = Entry(
             placeholder=f"Write {config.get('prefix', '>')} to search commands",
             h_expand=True,
             on_changed=self.on_search_changed,
-            # name="launcher-search",
             size=(700, 0),
         )
         self.search_image_box = Box(
@@ -117,6 +108,7 @@ class Launcher(Window):
         self.refresh_buttons()
 
         self.connect("key-release-event", self.on_window_key_release)
+        self.connect("focus-out-event", self.on_focus_out)
 
     def refresh_buttons(self):
         if self._refresh_timeout_id is not None:
@@ -144,12 +136,13 @@ class Launcher(Window):
 
             item_height = 40
             spacing = self.viewport.get_spacing() or 4
-
             new_height = min(len(buttons_to_show) * (item_height + spacing), 400)
 
-            self.anim_target_height = new_height
+            self.anim_current_content_height = new_height
             self.anim_target_opacity = 1.0
             self.anim_search_target_opacity = 1.0
+
+            self.anim_target_content_height = new_height + 20
 
             if not self.animation_running:
                 self.animation_running = True
@@ -263,76 +256,23 @@ class Launcher(Window):
         return False
 
     def animation_step(self):
-        speed = 0.3
+        cont = super().animation_step()
 
-        diff_height = self.anim_target_height - self.anim_current_height
-        self.anim_current_height += diff_height * speed
+        diff_content_height = self.anim_target_content_height - self.anim_current_content_height
+        if abs(diff_content_height) < 1:
+            self.anim_current_content_height = self.anim_target_content_height
+        else:
+            self.anim_current_content_height += diff_content_height * self.speed
 
-        diff_opacity = self.anim_target_opacity - self.anim_current_opacity
-        self.anim_current_opacity += diff_opacity * speed
-
-        diff_search_opacity = self.anim_search_target_opacity - self.anim_search_opacity
-        self.anim_search_opacity += diff_search_opacity * speed
-
-        height = int(self.anim_current_height) + 20
-        min_height = max(height, 1)
-        max_height = max(min_height, 1)
+        min_height = int(self.anim_current_content_height)
+        max_height = min_height + 20
         self.apps_scrolled.set_min_content_size((400, min_height))
         self.apps_scrolled.set_max_content_size((600, max_height))
 
-        self.set_opacity(self.anim_current_opacity)
-        self.search.set_opacity(self.anim_search_opacity)
-
-        if (
-            abs(diff_height) < 1
-            and abs(diff_opacity) < 0.01
-            and abs(diff_search_opacity) < 0.01
-        ):
-            self.anim_current_height = self.anim_target_height
-            self.anim_current_opacity = self.anim_target_opacity
-            self.anim_search_opacity = self.anim_search_target_opacity
-            height = int(self.anim_current_height) + 20
-            min_height = max(height, 1)
-            max_height = max(min_height, 1)
-            self.apps_scrolled.set_min_content_size((400, min_height))
-            self.apps_scrolled.set_max_content_size((600, max_height))
-            self.set_opacity(self.anim_current_opacity)
-            self.search.set_opacity(self.anim_search_opacity)
-            self.animation_running = False
-
-            if self.anim_current_opacity <= 0:
-                self.hide()
-
-            return False
-
-        return True
-
-    def animate_hide(self):
-        self.anim_target_height = 0
-        self.anim_target_opacity = 0
-        self.anim_search_target_opacity = 0
-        if not self.animation_running:
-            self.animation_running = True
-            GLib.timeout_add(10, self.animation_step)
+        return cont
 
     def animate_show(self):
-        self.show_all()
-        self.visible_apps = self.all_apps.copy()
-        self.anim_current_height = 0
-        self.anim_current_opacity = 0
-        self.anim_search_opacity = 0
-
-        self.anim_target_opacity = 1.0
-        self.anim_search_target_opacity = 1.0
-
         self.refresh_buttons()
+        self.visible_apps = self.all_apps.copy()
         GLib.idle_add(self.search.grab_focus)
-        if not self.animation_running:
-            self.animation_running = True
-            GLib.timeout_add(10, self.animation_step)
-
-    def toggle(self):
-        if self.is_visible():
-            self.animate_hide()
-        else:
-            self.animate_show()
+        super().animate_show()

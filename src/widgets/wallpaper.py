@@ -11,7 +11,7 @@ from fabric.widgets.image import Image
 from fabric.widgets.entry import Entry
 from fabric.widgets.scrolledwindow import ScrolledWindow
 
-from windows.wayland import WaylandWindow as Window
+from widgets.base import AnimatedWindow as Window
 from utils.notify_system import send_notification
 
 class WallpaperChooser(Window):
@@ -21,12 +21,10 @@ class WallpaperChooser(Window):
             name="wallpaper-chooser",
             layer="top",
             anchor="center bottom",
-            keyboard_mode="exclusive",
+            keyboard_mode="on-demand",
             exclusivity="none",
-            accept_focus=True,
             visible=False,
             all_visible=False,
-            margin=(0, 0, -40, 0),
         )
 
         self.wallpapers_path = os.path.expanduser(wallpapers_path)
@@ -42,12 +40,6 @@ class WallpaperChooser(Window):
         self.viewport = Box(orientation="h", spacing=4)
 
         self.set_opacity(0)
-
-        self.anim_current_opacity = 0
-        self.anim_target_opacity = 0
-        self.anim_search_opacity = 0
-        self.anim_search_target_opacity = 0
-        self.animation_running = False
 
         self.search = Entry(
             placeholder="Search wallpapers",
@@ -89,6 +81,7 @@ class WallpaperChooser(Window):
         self.viewport.add(self.no_wallpapers_container)
 
         self.connect("key-release-event", self.on_window_key_release)
+        self.connect("focus-out-event", self.on_focus_out)
 
         self.start_background_loading()
 
@@ -245,54 +238,9 @@ class WallpaperChooser(Window):
                     # GLib.idle_add(self.center_button, self.buttons[0])
                 return True
         return False
-
-    # def center_button(self, button):
-    #     self.wallpapers_scrolled.scroll_to_widget(button, True, True, 0.5, 0.5)
-    #     return False
-
-    def animation_step(self):
-        speed = 0.3
-        diff_opacity = self.anim_target_opacity - self.anim_current_opacity
-        self.anim_current_opacity += diff_opacity * speed
-        diff_search_opacity = self.anim_search_target_opacity - self.anim_search_opacity
-        self.anim_search_opacity += diff_search_opacity * speed
-
-        self.set_opacity(self.anim_current_opacity)
-        self.search.set_opacity(self.anim_search_opacity)
-
-        if abs(diff_opacity) < 0.01 and abs(diff_search_opacity) < 0.01:
-            self.anim_current_opacity = self.anim_target_opacity
-            self.anim_search_opacity = self.anim_search_target_opacity
-            self.set_opacity(self.anim_current_opacity)
-            self.search.set_opacity(self.anim_search_opacity)
-            self.animation_running = False
-            if self.anim_current_opacity <= 0:
-                self.hide()
-            return False
-        return True
-
-    def animate_hide(self):
-        self.anim_target_opacity = 0
-        self.anim_search_target_opacity = 0
-        if not self.animation_running:
-            self.animation_running = True
-            GLib.timeout_add(10, self.animation_step)
-
+    
     def animate_show(self):
-        self.show_all()
-        self.visible_wallpapers = self.all_wallpapers.copy()
-        self.anim_current_opacity = 0
-        self.anim_search_opacity = 0
-        self.anim_target_opacity = 1.0
-        self.anim_search_target_opacity = 1.0
         self.refresh_buttons()
+        self.visible_wallpapers = self.all_wallpapers.copy()
         GLib.idle_add(self.search.grab_focus)
-        if not self.animation_running:
-            self.animation_running = True
-            GLib.timeout_add(10, self.animation_step)
-
-    def toggle(self):
-        if self.is_visible():
-            self.animate_hide()
-        else:
-            self.animate_show()
+        super().animate_show()
