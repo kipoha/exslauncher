@@ -58,10 +58,30 @@ class OSD(Window):
         self._active = False
         self._animation_ids = {}
 
-        self.update_volume()
-        self.update_brightness()
+        self._muted = self.is_muted()
+        self._last_volume = self.get_volume()
+        self._last_brightness = self.get_brightness()
 
-    def animate_value(self, bar: CircularProgressBar, target: int, duration=200):
+        self._init_bars()
+
+    def _init_bars(self):
+        self.animate_value(self.brightness_widget.bar, self._last_brightness)
+        self.animate_value(self.volume_widget.bar, self._last_volume)
+        self._show_osd()
+
+    def _show_osd(self):
+        if not self.is_visible():
+            self.set_visible(True)
+            self.animate_show()
+            self._active = True
+        self._reset_hide_timer()
+
+    def _reset_hide_timer(self):
+        if self._hide_timeout_id:
+            GLib.source_remove(self._hide_timeout_id)
+        self._hide_timeout_id = GLib.timeout_add_seconds(1, self.animate_hide)
+
+    def animate_value(self, bar: CircularProgressBar, target: int, duration=100):
         if bar in self._animation_ids:
             GLib.source_remove(self._animation_ids[bar])
             del self._animation_ids[bar]
@@ -85,28 +105,13 @@ class OSD(Window):
 
         self._animation_ids[bar] = GLib.timeout_add(step_time, update)
 
-    def _reset_hide_timer(self):
-        if self._hide_timeout_id:
-            GLib.source_remove(self._hide_timeout_id)
-        self._hide_timeout_id = GLib.timeout_add_seconds(1, self.animate_hide)
-
     def update_volume(self):
-        value = self.get_volume()
-        self.animate_value(self.volume_widget.bar, value)
+        self.animate_value(self.volume_widget.bar, self._last_volume)
         self._show_osd()
 
     def update_brightness(self):
-        value = self.get_brightness()
-        self.animate_value(self.brightness_widget.bar, value)
+        self.animate_value(self.brightness_widget.bar, self._last_brightness)
         self._show_osd()
-
-    def _show_osd(self):
-        if not self.is_visible():
-            self.set_visible(True)
-            self.animate_show()
-            self._active = True
-        else:
-            self._reset_hide_timer()
 
     def get_volume(self) -> int:
         try:
@@ -122,6 +127,17 @@ class OSD(Window):
             print("Error getting volume:", e)
             return 0
 
+    def is_muted(self) -> bool:
+        try:
+            result = subprocess.run(
+                ["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"],
+                capture_output=True, text=True
+            )
+            return "MUTED" in result.stdout
+        except Exception as e:
+            print("Error checking mute state:", e)
+            return False
+
     def get_brightness(self) -> int:
         try:
             bright = int(subprocess.run(
@@ -136,30 +152,32 @@ class OSD(Window):
             return 0
 
     def set_volume(self, up: bool = True):
-        subprocess.run(["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%+" if up else "5%-"])
+        if up and self._last_volume < 100:
+            self._last_volume = min(self._last_volume + 5, 100)
+            subprocess.Popen(["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%+"])
+        elif not up and self._last_volume > 0:
+            self._last_volume = max(self._last_volume - 5, 0)
+            subprocess.Popen(["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", "5%-"])
         self.update_volume()
         self._show_osd()
 
     def mute_volume(self):
-        subprocess.run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"])
+        self._muted = not self._muted
+        subprocess.Popen(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"])
 
-        result = subprocess.run(
-            ["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"],
-            capture_output=True, text=True
-        )
-        muted = "MUTED" in result.stdout
-
-        if muted:
-            vol = 0
+        if self._muted:
             self.volume_widget.icon_label.set_properties(label="")
         else:
-            vol = int(float(result.stdout.strip().split()[1]) * 100)
             self.volume_widget.icon_label.set_properties(label="")
 
-        self.animate_value(self.volume_widget.bar, vol)
         self._show_osd()
 
     def set_brightness(self, up: bool = True):
-        subprocess.run(["brightnessctl", "set", "5%+" if up else "5%-"])
+        if up and self._last_brightness < 100:
+            self._last_brightness = min(self._last_brightness + 5, 100)
+            subprocess.Popen(["brightnessctl", "set", "5%+"])
+        elif not up and self._last_brightness > 0:
+            self._last_brightness = max(self._last_brightness - 5, 0)
+            subprocess.Popen(["brightnessctl", "set", "5%-"])
         self.update_brightness()
         self._show_osd()

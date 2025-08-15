@@ -1,0 +1,5 @@
+window#bar-window {
+  border: 80px solid #faa;
+  border-radius: 20px;
+  background-color: rgba(0, 0, 0, 0.8);
+}
