@@ -4,6 +4,8 @@
 @import url("./styles/wallpaper.css");
 @import url("./styles/osd.css");
 @import url("./styles/trigger.css");
+@import url("./styles/corners.css");
+@import url("./styles/bar.css");
 
 * {
   all: unset;

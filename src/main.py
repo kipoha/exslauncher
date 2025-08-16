@@ -19,9 +19,7 @@ from widgets.clipboard import Clipboard
 from widgets.wallpaper import WallpaperChooser
 from widgets.firefox_search import FirefoxSearch
 from widgets.osd import OSD
-# from widgets.bar import Bar
-
-# from events.mouse_trigger import TriggerWindow
+from widgets.bar import Bar, Corners
 
 from utils.path import get_root_path
 from utils.load_config import config
@@ -38,7 +36,8 @@ if __name__ == "__main__":
     try:
         signal.signal(signal.SIGTERM, handle_exit)
         signal.signal(signal.SIGINT, handle_exit)
-        # bar = Bar()
+        bar = Bar()
+        corners = Corners()
         launcher = Launcher()
         clipboard = Clipboard()
         wallpaper = WallpaperChooser(
@@ -46,7 +45,6 @@ if __name__ == "__main__":
         )
         browser = FirefoxSearch()
         osd = OSD()
-        # osd_trigger = TriggerWindow(osd)
         app = Application()
 
         app.set_stylesheet_from_file(str(get_root_path() / "main.css"))
@@ -63,10 +61,12 @@ if __name__ == "__main__":
         handle_exit(0, None)
     except Exception:
         import traceback
+        error = traceback.format_exc()
 
+        print(error)
         send_notification(
             "Fabric Launcher",
-            f"Fabric Launcher is not running\n```py\n{traceback.format_exc()}\n```",
+            f"Fabric Launcher is not running\n```py\n{error}\n```",
             urgency="critical",
             app_name="EXS Launcher",
         )

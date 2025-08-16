@@ -1,3 +1,4 @@
+import threading
 import subprocess
 
 from gi.repository import GLib
@@ -9,6 +10,7 @@ from fabric.widgets.centerbox import CenterBox
 from fabric.widgets.overlay import Overlay
 
 from widgets.base import AnimatedWindow as Window
+# from events.mouse_trigger import TriggerWindow
 
 
 class IconCircular(Box):
@@ -32,6 +34,7 @@ class OSD(Window):
             all_visible=False,
             anim_direction="right",
         )
+        # self.trigger = TriggerWindow(self)
 
         self.brightness_widget = IconCircular("󰃞", "brightness-bar")
         self.volume_widget = IconCircular("", "volume-bar")
@@ -54,6 +57,7 @@ class OSD(Window):
 
         self.children = CenterBox(center_children=box)
 
+        self._debounce_pending = False
         self._hide_timeout_id = None
         self._active = False
         self._animation_ids = {}
@@ -63,6 +67,9 @@ class OSD(Window):
         self._last_brightness = self.get_brightness()
 
         self._init_bars()
+        thread = threading.Thread(target=self.monitor_audio_change)
+        thread.daemon = True
+        thread.start()
 
     def _init_bars(self):
         self.animate_value(self.brightness_widget.bar, self._last_brightness)
@@ -80,6 +87,33 @@ class OSD(Window):
         if self._hide_timeout_id:
             GLib.source_remove(self._hide_timeout_id)
         self._hide_timeout_id = GLib.timeout_add_seconds(1, self.animate_hide)
+
+    def monitor_audio_change(self):
+        process = subprocess.Popen(
+            ["pactl", "subscribe"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1
+        )
+
+        if process.stdout:
+            for line in process.stdout:
+                if (("sink" in line and "sink-input" not in line) or
+                    ("source" in line and "source-output" not in line) or
+                    "server" in line):
+
+                    if not self._debounce_pending:
+                        self._debounce_pending = True
+
+                        def update_osd():
+                            self._last_volume = self.get_volume()
+                            self._muted = self.is_muted()
+                            self._init_bars()
+                            self._debounce_pending = False
+                            return False
+
+                        GLib.timeout_add(50, update_osd) 
 
     def animate_value(self, bar: CircularProgressBar, target: int, duration=100):
         if bar in self._animation_ids:

@@ -1,0 +1,37 @@
+#screen-border-top {
+  background-color: #131317;
+  border-radius: 0px;
+  font-size: 0px;
+}
+
+#screen-border-bottom {
+  background-color: #131317;
+  border-radius: 0px;
+  font-size: 0px;
+}
+
+#screen-border-right {
+  background-color: #131317;
+  border-radius: 0px;
+  font-size: 0px;
+}
+
+#corner-top-left {
+  background-color: #131317;
+  border: solid 3px #131317;
+}
+
+#corner-top-right {
+  background-color: #131317;
+  border: solid 3px #131317;
+}
+
+#corner-bottom-left {
+  background-color: #131317;
+  border: solid 3px #131317;
+}
+
+#corner-bottom-right {
+  background-color: #131317;
+  border: solid 3px #131317;
+}

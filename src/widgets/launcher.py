@@ -208,14 +208,14 @@ class Launcher(Window):
                 cmd
                 for cmd in self.commands
                 if text[1:]
-                in ((cmd.display_name or "") + " " + (cmd.name or "")).casefold()
+                in ((cmd.display_name or "") + " " + (cmd.name or "" + " " + (cmd.description or ""))).casefold()
             ]
         else:
             self.visible_apps = [
                 app
                 for app in self.all_apps
                 if text
-                in ((app.display_name or "") + " " + (app.name or "")).casefold()
+                in ((app.display_name or "") + " " + (app.name or "") + " " + (app.description or "")).casefold()
             ]
         self.refresh_buttons()
 
