@@ -5,6 +5,8 @@ def get_bluetooth_status():
     try:
         output = subprocess.check_output(["bluetoothctl", "show"]).decode()
         powered = next(line for line in output.splitlines() if "Powered:" in line).split(":")[1].strip()
-        return "On" if powered == "yes" else "Off"
+        return powered == "yes"
     except Exception:
-        return "Bluetooth N/A"
+        import traceback
+        traceback.print_exc()
+        return False

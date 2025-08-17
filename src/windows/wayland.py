@@ -11,7 +11,7 @@ from fabric.utils.helpers import extract_css_values, get_enum_member
 from fabric.widgets.window import Window
 from loguru import logger
 
-gi.require_version("Gtk", "3.0")
+# gi.require_version("Gtk", "3.0")
 
 try:
     gi.require_version("GtkLayerShell", "0.1")

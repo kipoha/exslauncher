@@ -1,0 +1,73 @@
+window#battery-profile {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+#battery-profile-content-box {
+  margin: 0px;
+}
+
+#battery-profile-main-box {
+  background-color: #131317;
+  margin-bottom: 0px;
+  margin-left: 37px;
+  padding: 8px;
+  border-radius: 0 16px 0 0;
+}
+
+#battery-profile-buttons {
+  background-color: rgba(100, 100, 100, 0.2);
+  padding: 4px;
+  border-radius: 12px;
+}
+
+#battery-profile-performance-button label {
+  padding: 5px 26px 5px 22px;
+}
+#battery-profile-balanced-button label {
+  padding: 5px 29px 5px 19px;
+}
+#battery-profile-power-save-button label {
+  padding: 5px 26px 5px 22px;
+}
+
+#battery-profile-balanced-button,
+#battery-profile-performance-button,
+#battery-profile-power-save-button {
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background-color: rgba(100, 100, 100, 0.2);
+  border-radius: 12px;
+}
+
+
+#battery-profile-performance-button label,
+#battery-profile-balanced-button label,
+#battery-profile-power-save-button label {
+  font-weight: bold;
+  font-size: 20px;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+#battery-profile-performance-button:hover,
+#battery-profile-balanced-button:hover,
+#battery-profile-power-save-button:hover {
+  background-color: rgba(100, 100, 100, 0.4);
+}
+
+#battery-profile-performance-button:hover label,
+#battery-profile-balanced-button:hover label,
+#battery-profile-power-save-button:hover label {
+  color: #C2C1FF;
+}
+
+#battery-profile-performance-button.active,
+#battery-profile-balanced-button.active,
+#battery-profile-power-save-button.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+#battery-profile-performance-button.active label,
+#battery-profile-balanced-button.active label,
+#battery-profile-power-save-button.active label {
+  color: #C2C1FF;
+}

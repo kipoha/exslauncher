@@ -2,3 +2,89 @@ window#bar-window {
   background-color: #131317;
   border-radius: 0px
 }
+
+
+#bar-top-box {
+  margin: 10px 5px 5px 5px
+}
+
+#bar-center-box {
+  margin: 5px
+}
+
+#bar-bottom-box {
+  margin: 5px 5px 10px 5px
+}
+
+#bar-time-box {
+  background-color: rgba(100, 100, 100, 0.2);
+  border-radius: 12px;
+  color: #C2C1FF;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 7px;
+}
+
+#bar-clock {
+  font-size: 16px;
+}
+
+#bar-clock-icon {
+  font-size: 20px;
+  margin: 0px 5px 0px 0px
+}
+
+#bar-systems {
+  padding: 7px;
+  background-color: rgba(100, 100, 100, 0.2);
+  border-radius: 12px;
+  color: #C2C1FF;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#bar-bluetooth {
+  font-size: 20px;
+  margin: 0px 2px 0px 0px
+}
+
+#bar-wifi {
+  font-size: 18px;
+  margin: 0px 4px 0px 0px
+}
+
+#bar-battery {
+  font-size: 18px;
+  margin: 0px 0px 0px 1px
+}
+
+#bar-system-tray {
+  padding: 5px 0px 5px 7px;
+  border-radius: 12px;
+  color: #C2C1FF;
+}
+
+#bar-system-tray.invert {
+  background-color: #131317;
+  border-radius: 12px;
+}
+
+menu {
+  border: solid 1px;
+  border-radius: 16px;
+  border-color: rgba(255, 255, 255, 0.08);
+  background-color: #131317;
+  padding: 6px;
+}
+
+menu > menuitem {
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+menu > menuitem:hover {
+  background-color: rgba(100, 100, 100, 0.2);
+}
+
+menu > menuitem:hover > label {
+  color: #C2C1FF;
+}
+

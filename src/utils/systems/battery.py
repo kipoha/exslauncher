@@ -1,11 +1,11 @@
-import subprocess
+import psutil
 
 
 def get_battery_status():
-    try:
-        output = subprocess.check_output(["upower", "-i", "/org/freedesktop/UPower/devices/battery_BAT0"]).decode()
-        percent = next(line for line in output.splitlines() if "percentage" in line).split(":")[1].strip()
-        state = next(line for line in output.splitlines() if "state" in line).split(":")[1].strip()
-        return f"{percent} ({state})"
-    except Exception:
-        return "Battery N/A"
+    battery = psutil.sensors_battery()
+    if battery is None:
+        return {"percent": 0, "plugged": False}
+    return {
+        "percent": int(battery.percent),
+        "plugged": battery.power_plugged
+    }

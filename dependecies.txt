@@ -1,3 +1,4 @@
 python-fabric-git
 python-pillow
 python-gobject
+python-psutil
