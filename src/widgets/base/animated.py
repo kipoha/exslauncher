@@ -11,6 +11,10 @@ class AnimatedWindow(Window):
         self.anim_target_offset = -40
         self.anim_current_opacity = 0
         self.anim_target_opacity = 0
+        self.margin_left = kwargs.get("margin_left", 0)
+        self.margin_right = kwargs.get("margin_right", 0)
+        self.margin_top = kwargs.get("margin_top", 0)
+        self.margin_bottom = kwargs.get("margin_bottom", 0)
 
         self.animation_running = False
         self.speed = 0.15
@@ -30,10 +34,10 @@ class AnimatedWindow(Window):
 
     def animation_step(self):
         margin_dict: dict[str, tuple[int, int, int, int]] = {
-            "bottom": (0, 0, int(self.anim_current_offset), 0),
-            "top":    (int(self.anim_current_offset), 0, 0, 0),
-            "left":   (0, 0, 0, int(self.anim_current_offset)),
-            "right":  (0, int(self.anim_current_offset), 0, 0),
+            "bottom": (self.margin_top, self.margin_right, int(self.anim_current_offset) + self.margin_bottom, self.margin_left),
+            "top":    (int(self.anim_current_offset) + self.margin_top, self.margin_right, self.margin_bottom, self.margin_left),
+            "left":   (self.margin_top, self.margin_right, self.margin_bottom, int(self.anim_current_offset) + self.margin_left),
+            "right":  (self.margin_top, int(self.anim_current_offset) + self.margin_right, self.margin_bottom, self.margin_left),
         }
         
         diff = self.anim_target_offset - self.anim_current_offset
@@ -42,7 +46,7 @@ class AnimatedWindow(Window):
         diff_opacity = self.anim_target_opacity - self.anim_current_opacity
         self.anim_current_opacity += diff_opacity * self.speed
 
-        margin = margin_dict.get(self.anim_direction, (0, 0, int(self.anim_current_offset), 0))
+        margin = margin_dict.get(self.anim_direction, (self.margin_top, self.margin_right, int(self.anim_current_offset), self.margin_left))
         self.set_margin(margin)
         self.set_opacity(self.anim_current_opacity)
 

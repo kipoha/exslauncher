@@ -180,7 +180,8 @@ class WallpaperChooser(Window):
         def on_click(*_):
 
             self.animate_hide()
-            subprocess.Popen(f"caelestia shell wallpaper set {wallpaper['path']}", shell=True)
+
+            subprocess.Popen(f"swww img --transition-fps 144 --transition-duration 1 -t any {wallpaper['path']}", shell=True)
             subprocess.Popen(f"ln -sf {wallpaper['path']} ~/.current.wall", shell=True)
             send_notification(
                 "Wallpaper",
