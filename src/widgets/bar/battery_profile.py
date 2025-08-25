@@ -51,7 +51,7 @@ class BatteryProfile(Window):
             h_expand=True,
             v_expand=True,
             children=[self.power_save_button, self.balanced_button, self.performance_button],
-            spacing=5
+            spacing=5,
         )
 
         self.percentage = Label(
@@ -67,7 +67,7 @@ class BatteryProfile(Window):
             h_expand=True,
             v_expand=True,
             children=[self.percentage, self.buttons],
-            spacing=3
+            spacing=3,
         )
 
         self.content_box = Box(

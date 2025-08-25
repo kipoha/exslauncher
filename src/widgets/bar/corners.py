@@ -58,7 +58,7 @@ class TopCorners(Window):
     def __init__(self, **kwargs):
         super().__init__(
             name="top-corners",
-            layer="overlay",
+            layer="top",
             anchor="left top right",
             exclusivity="none",
             **kwargs
@@ -81,7 +81,7 @@ class BottomCorners(Window):
     def __init__(self, **kwargs):
         super().__init__(
             name="bottom-corners",
-            layer="overlay",
+            layer="top",
             anchor="left bottom right",
             exclusivity="none",
             **kwargs

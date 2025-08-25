@@ -56,6 +56,11 @@ window#bar-window {
   margin: 0px 0px 0px 1px
 }
 
+#bar-battery label {
+  font-size: 18px;
+  margin: 0px 0px 0px 0px
+}
+
 #bar-system-tray {
   padding: 5px 0px 5px 7px;
   border-radius: 12px;

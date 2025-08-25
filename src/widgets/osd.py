@@ -8,6 +8,7 @@ from fabric.widgets.label import Label
 from fabric.widgets.circularprogressbar import CircularProgressBar
 from fabric.widgets.centerbox import CenterBox
 from fabric.widgets.overlay import Overlay
+from fabric import Fabricator
 
 from widgets.base import AnimatedWindow as Window
 # from events.mouse_trigger import TriggerWindow
@@ -26,7 +27,7 @@ class OSD(Window):
         super().__init__(
             title="OSD",
             name="osd",
-            layer="top",
+            layer="overlay",
             keyboard_mode="off",
             exclusivity="none",
             anchor="right center",
@@ -35,7 +36,6 @@ class OSD(Window):
             anim_direction="right",
         )
         # self.trigger = TriggerWindow(self)
-
         self.brightness_widget = IconCircular("󰃞", "brightness-bar")
         self.volume_widget = IconCircular("", "volume-bar")
 
@@ -55,6 +55,18 @@ class OSD(Window):
             name="osd-box",
         )
 
+        self._last_device = self._get_volume_device()
+
+        self.volume_device = Fabricator(
+            poll_from=lambda _: self._get_volume_device(),
+            interval=1000,
+        )
+
+        self.volume_device.connect(
+            "changed",
+            lambda _, new_value: self._on_device_changed(_, new_value),
+        )
+
         self.children = CenterBox(center_children=box)
 
         self._debounce_pending = False
@@ -67,9 +79,27 @@ class OSD(Window):
         self._last_brightness = self.get_brightness()
 
         self._init_bars()
-        thread = threading.Thread(target=self.monitor_audio_change)
-        thread.daemon = True
-        thread.start()
+
+    def _get_volume_device(self):
+        try:
+            out = subprocess.check_output(["pactl", "info"], text=True)
+            for line in out.splitlines():
+                if line.startswith("Default Sink:"):
+                    result = line.split(":", 1)[1].strip()
+                    return result
+        except subprocess.CalledProcessError:
+            return None
+        return None
+
+    def _update_osd(self):
+        self._last_volume = self.get_volume()
+        self._muted = self.is_muted()
+        self._init_bars()
+
+    def _on_device_changed(self, _, new_value):
+        if new_value != self._last_device:
+            self._last_device = new_value
+            self._update_osd()
 
     def _init_bars(self):
         self.animate_value(self.brightness_widget.bar, self._last_brightness)
@@ -87,33 +117,6 @@ class OSD(Window):
         if self._hide_timeout_id:
             GLib.source_remove(self._hide_timeout_id)
         self._hide_timeout_id = GLib.timeout_add_seconds(1, self.animate_hide)
-
-    def monitor_audio_change(self):
-        process = subprocess.Popen(
-            ["pactl", "subscribe"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1
-        )
-
-        if process.stdout:
-            for line in process.stdout:
-                if (("sink" in line and "sink-input" not in line) or
-                    ("source" in line and "source-output" not in line) or
-                    "server" in line):
-
-                    if not self._debounce_pending:
-                        self._debounce_pending = True
-
-                        def update_osd():
-                            self._last_volume = self.get_volume()
-                            self._muted = self.is_muted()
-                            self._init_bars()
-                            self._debounce_pending = False
-                            return False
-
-                        GLib.timeout_add(50, update_osd) 
 
     def animate_value(self, bar: CircularProgressBar, target: int, duration=100):
         if bar in self._animation_ids:
